@@ -1,0 +1,170 @@
+import json
+
+class PantryManager:
+    def __init__(self, ingredient_file='pantry_data.json', shopping_file='shopping_list.json'):
+        # initializing the PantryManager with defult file nemaes 
+        self.ingredient_file = ingredient_file
+        self.shopping_file = shopping_file
+        # load data from JSON file to make sure the program can collect data 
+        self.ingredient_list = self.load_data(self.ingredient_file)
+        self.shopping_list = self.load_data(self.shopping_file)
+
+    def load_data(self, filename):
+        try:
+            with open(filename, 'r') as file:
+                data = json.load(file)
+                if not data: 
+                     # Checks if data is empty
+                    return {}
+                return data
+        except FileNotFoundError:
+            return {}  # This accounts for if the file doesn't exist
+        except json.JSONDecodeError:
+            print(f"Error: Unable to parse JSON from {filename}.")
+        return {} 
+
+    # function to save data to json file 
+    def save_data(self):
+        self.save_data_to_file(self.ingredient_list, self.ingredient_file)
+        self.save_data_to_file(self.shopping_list, self.shopping_file)
+
+
+    # create a function to send data to the json file 
+    def save_data_to_file(self, data, filename):
+        with open(filename, 'w') as file:
+            json.dump(data, file)
+
+    # function to output the dictionary of current ingredients 
+    def view_current_ingredients(self):
+        if not self.ingredient_list:
+            print("There are currently no ingredients in your pantry!")
+        else:
+            print("Current ingredients:")
+            for ingredient, amount in self.ingredient_list.items():
+                print(f"{amount}: {ingredient}")
+    
+    
+    # function to output the dictionary of current supping list 
+    def view_shopping_list(self):
+        if not self.shopping_list:
+            print("There are currently no ingredients on your shopping list!")
+        else:
+            print("Current shopping list:")
+            for ingredient, amount in self.shopping_list.items():
+                print(f"{amount}: {ingredient}")
+    # create a function to add ingredients to the pantry 
+    def add_to_pantry(self):
+        print("Current Ingredient List:", self.ingredient_list)
+        ingredient = input("Enter the name of the ingredient to add to the pantry: ").lower()
+        amount = int(input(f"Enter the amount of {ingredient} to add: "))
+        if ingredient in self.ingredient_list:
+            self.ingredient_list[ingredient] += amount
+        else:
+            self.ingredient_list[ingredient] = amount
+        print("Current pantry ingredients:", self.ingredient_list)
+        self.save_data()  # Save after modification
+    
+    
+    # create a function to remove ingredients to the pantry 
+
+    def remove_from_pantry(self):
+        if not self.ingredient_list:
+            print("There are currently no ingredients in your pantry!")
+            return
+
+        print("Current Ingredients in Pantry:")
+        for index, ingredient in enumerate(self.ingredient_list.keys(), 1):
+            print(f'{index}. {self.ingredient_list[ingredient]} - {ingredient} ')
+
+        index_of_del_item = int(input("Enter the number of the ingredient you'd like to remove: "))
+        if 1 <= index_of_del_item <= len(self.ingredient_list):
+            ingredient_to_remove = list(self.ingredient_list.keys())[index_of_del_item - 1]
+            del self.ingredient_list[ingredient_to_remove]
+            print("Updated pantry:", self.ingredient_list)
+            self.save_data()  # Save after modification
+        else:
+            print("Invalid index")
+
+    # Create a function to add elements to the shopping list 
+    def add_to_shopping_list(self):
+        print("Current shopping list:", self.shopping_list)
+        ingredient = input("Enter the name of the ingredient to add to the shopping list: ").lower()
+        amount = int(input(f"Enter the amount of {ingredient} to add: "))
+        if ingredient in self.shopping_list:
+            self.shopping_list[ingredient] += amount
+        else:
+            self.shopping_list[ingredient] = amount
+        print("Current shopping list:", self.shopping_list)
+        self.save_data()  # Save after modification
+
+    # create a function that allows the user to remove items from the shopping list. 
+    def remove_from_shopping_list(self):
+        # this checks if there are any elements in the dictionary 
+        if not self.shopping_list:
+            print("There are currently no ingredients on your shopping list!")
+            return
+
+        print("Current Shopping List:")
+        for index, ingredient in enumerate(self.shopping_list.keys(), 1):
+            print(f"{index}. {ingredient} - {self.shopping_list[ingredient]}")
+
+        index_of_del_item = int(input("Enter the number of the ingredient you'd like to remove: "))
+        # validating if the user is entering an incorrect index 
+        if 1 <= index_of_del_item <= len(self.shopping_list):
+            ingredient_to_remove = list(self.shopping_list.keys())[index_of_del_item - 1]
+            del self.shopping_list[ingredient_to_remove]
+            print("Updated shopping list:", self.shopping_list)
+            self.save_data()  # Save after modification
+        else:
+            print("Invalid index")
+
+
+    def exit_pantry(self):
+        print("Exiting pantry...")
+
+        # ALLOWS FOR MEMORY DATA 
+        self.save_data()  # Save data before exiting
+
+    # create a function that prints the menu for after the initial input 
+    def display_menu(self):
+        while True:
+            print("What else would you like to do? ")
+            print("Choose one of the following options: ")
+            print(" A. View current ingredients")
+            print(" B. View shopping list ")
+            print(" C. Add ingredients to the pantry ")
+            print(" D. Throw an ingredient away")
+            print(" E. Add ingredients to the shopping list ")
+            print(" F. Subtract ingredients from the shopping list")
+            print(" G. Exit pantry")
+
+            user_choice = input().upper()
+
+            if user_choice == 'A':
+                self.view_current_ingredients()
+            elif user_choice == 'B':
+                self.view_shopping_list()
+            elif user_choice == 'C':
+                self.add_to_pantry()
+            elif user_choice == 'D':
+                self.remove_from_pantry()
+            elif user_choice == 'E':
+                self.add_to_shopping_list()
+            elif user_choice == 'F':
+                self.remove_from_shopping_list()
+            elif user_choice == 'G':
+                self.exit_pantry()
+                break
+            else:
+                print("Invalid choice. Please choose again.")
+
+def main():
+    pantry_manager = PantryManager()
+    # I want the initial greeting to be Welcome to the pantry!
+    print("Welcome to the pantry!")
+
+    # call display menu function for continuous input 
+    pantry_manager.display_menu()
+
+if __name__ == "__main__":
+    main()
